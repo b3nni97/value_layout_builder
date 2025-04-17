@@ -49,7 +49,7 @@ class SliverValueConstraints<T> extends SliverConstraints {
 
   @override
   int get hashCode {
-    return hashValues(
+    return Object.hash(
       axisDirection,
       growthDirection,
       scrollOffset,
@@ -82,9 +82,9 @@ class SliverValueLayoutBuilder<T>
     extends ConstrainedLayoutBuilder<SliverValueConstraints<T>> {
   /// Creates a sliver widget that defers its building until layout.
   const SliverValueLayoutBuilder({
-    Key? key,
+    super.key,
     required SliverValueLayoutWidgetBuilder<T> builder,
-  }) : super(key: key, builder: builder);
+  }) : super(builder: builder);
 
   /// Called at layout time to construct the widget tree.
   ///
@@ -100,7 +100,7 @@ class SliverValueLayoutBuilder<T>
 class _RenderSliverValueLayoutBuilder<T> extends RenderSliver
     with
         RenderObjectWithChildMixin<RenderSliver>,
-        RenderConstrainedLayoutBuilder<SliverValueConstraints<T>,
+        RenderAbstractLayoutBuilderMixin<SliverValueConstraints<T>,
             RenderSliver> {
   @override
   double childMainAxisPosition(RenderObject child) {
@@ -135,5 +135,14 @@ class _RenderSliverValueLayoutBuilder<T> extends RenderSliver
         child!.hitTest(result,
             mainAxisPosition: mainAxisPosition,
             crossAxisPosition: crossAxisPosition);
+  }
+
+  @override
+  SliverValueConstraints<T> get layoutInfo {
+    // Create a SliverValueConstraints from the current constraints
+    return SliverValueConstraints<T>(
+      value: (constraints as SliverValueConstraints<T>).value,
+      constraints: constraints,
+    );
   }
 }

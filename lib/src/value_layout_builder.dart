@@ -21,7 +21,7 @@ class BoxValueConstraints<T> extends BoxConstraints {
   final T value;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     assert(debugAssertIsValid());
     if (identical(this, other)) return true;
     if (other is! BoxValueConstraints<T>) return false;
@@ -37,7 +37,7 @@ class BoxValueConstraints<T> extends BoxConstraints {
   @override
   int get hashCode {
     assert(debugAssertIsValid());
-    return hashValues(minWidth, maxWidth, minHeight, maxHeight, value);
+    return Object.hash(minWidth, maxWidth, minHeight, maxHeight, value);
   }
 }
 
@@ -49,15 +49,15 @@ class BoxValueConstraints<T> extends BoxConstraints {
 ///
 /// See also:
 ///
-///  * [LayoutBuilder].
-///  * [SliverValueLayoutBuilder], the sliver version of this widget.
+/// * [LayoutBuilder].
+/// * [SliverValueLayoutBuilder], the sliver version of this widget.
 class ValueLayoutBuilder<T>
     extends ConstrainedLayoutBuilder<BoxValueConstraints<T>> {
   /// Creates a widget that defers its building until layout.
   const ValueLayoutBuilder({
-    Key? key,
+    super.key,
     required ValueLayoutWidgetBuilder<T> builder,
-  }) : super(key: key, builder: builder);
+  }) : super(builder: builder);
 
   @override
   ValueLayoutWidgetBuilder<T> get builder => super.builder;
@@ -70,7 +70,7 @@ class ValueLayoutBuilder<T>
 class _RenderValueLayoutBuilder<T> extends RenderBox
     with
         RenderObjectWithChildMixin<RenderBox>,
-        RenderConstrainedLayoutBuilder<BoxValueConstraints<T>, RenderBox> {
+        RenderAbstractLayoutBuilderMixin<BoxValueConstraints<T>, RenderBox> {
   @override
   double computeMinIntrinsicWidth(double height) {
     assert(_debugThrowIfNotCheckingIntrinsics());
@@ -117,6 +117,16 @@ class _RenderValueLayoutBuilder<T> extends RenderBox
     if (child != null) context.paintChild(child!, offset);
   }
 
+  @override
+  BoxValueConstraints<T> get layoutInfo {
+    // Create a BoxValueConstraints from the current constraints
+    // This is needed for the new RenderAbstractLayoutBuilderMixin
+    return BoxValueConstraints<T>(
+      value: (constraints as BoxValueConstraints<T>).value,
+      constraints: constraints,
+    );
+  }
+
   bool _debugThrowIfNotCheckingIntrinsics() {
     assert(() {
       if (!RenderObject.debugCheckingIntrinsics) {
@@ -127,7 +137,6 @@ class _RenderValueLayoutBuilder<T> extends RenderBox
       }
       return true;
     }());
-
     return true;
   }
 }
